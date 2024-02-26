@@ -1,7 +1,7 @@
-local nio = require("nio")
-local lib = require("neotest.lib")
-local logger = require("neotest.logging")
-local Tree = require("neotest.types").Tree
+local nio = require('nio')
+local lib = require('neotest.lib')
+local logger = require('neotest.logging')
+local Tree = require('neotest.types').Tree
 
 Pos = { child_failed = true } -- TODO: Set to false
 
@@ -18,7 +18,18 @@ local annotation_based_query = [[
   (command
     name: (command_name) @test.start
     (#eq? @test.start "@test")
+    argument: (word) @test.name
+    argument: (word) @opening_brace
+  )
+  (command
+    name: (command_name) @test.start
+    (#eq? @test.start "@test")
     argument: (string) @test.name
+  )
+  (command
+    name: (command_name) @test.start
+    (#eq? @test.start "@test")
+    argument: (raw_string) @test.name
   )
   (command
     name: (command_name) @test.end
@@ -29,14 +40,29 @@ local annotation_based_query = [[
 ---@returns string[]
 local function get_at_range(lines, node)
   local sr, sc, er, ec = node:range()
-  assert(#lines >= er + 1, "end row (" .. er + 1 .. ") is more than #lines (" .. #lines .. ")")
   assert(
-    #lines[sr + 1] >= sc + 1,
-    "start col (" .. sc + 1 .. ") is more than #lines[" .. sr + 1 .. "] (" .. #lines[sr + 1] .. ")"
+    #lines >= er + 1,
+    'end row (' .. er + 1 .. ') is more than #lines (' .. #lines .. ')'
   )
   assert(
-    #lines[er + 1] >= ec + 1,
-    "start col (" .. ec + 1 .. ") is more than #lines[" .. er + 1 .. "] (" .. #lines[er + 1] .. ")"
+    #lines[sr + 1] >= sc,
+    'start col ('
+      .. sc
+      .. ') is more than #lines['
+      .. sr + 1
+      .. '] ('
+      .. #lines[sr + 1]
+      .. ')'
+  )
+  assert(
+    #lines[er + 1] >= ec,
+    'end col ('
+      .. ec + 1
+      .. ') is more than #lines['
+      .. er + 1
+      .. '] ('
+      .. #lines[er + 1]
+      .. ')'
   )
   local range = {}
   if sr == er then
@@ -56,14 +82,14 @@ end
 ---@private
 function Pos._build_list_of_positions(file_path, query_str)
   local content = lib.files.read(file_path)
-  local lines = vim.split(content, "[\r]?\n", { trimempty = false })
+  local lines = vim.split(content, '[\r]?\n', { trimempty = false })
   local root, lang = lib.treesitter.get_parse_root(file_path, content, {})
   local query = lib.treesitter.normalise_query(lang, query_str)
   local parsed = {
     {
-      type = "file",
+      type = 'file',
       path = file_path,
-      name = nio.fn.fnamemodify(file_path, ":t"),
+      name = nio.fn.fnamemodify(file_path, ':t'),
       id = file_path,
       range = { root:range() },
     },
@@ -71,24 +97,35 @@ function Pos._build_list_of_positions(file_path, query_str)
   for _, match, _ in query:iter_matches(root, content) do
     for id, node in pairs(match) do
       local cap_name = query.captures[id]
-      if cap_name == "test.start" then
+      if cap_name == 'test.start' then
         table.insert(parsed, {
-          id = "",
-          type = "test",
-          name = "",
+          id = '',
+          type = 'test',
+          name = '',
           path = file_path,
           range = { node:range() },
         })
-      elseif cap_name == "test.name" then
+      elseif cap_name == 'test.name' then
         local extracted = get_at_range(lines, node)
-        assert(#extracted == 1, "multiple lines returned for test_name: " .. vim.inspect(extracted))
+        assert(
+          #extracted == 1,
+          'multiple lines returned for test_name: ' .. vim.inspect(extracted)
+        )
         local test_name = extracted[1]
-        test_name = string.sub(test_name, 2, #test_name - 1)
-        assert(parsed[#parsed].id == "", "id already set for: " .. vim.inspect(parsed[#parsed]))
-        parsed[#parsed].id = file_path .. "::" .. test_name
-        assert(parsed[#parsed].name == "", "name already set for: " .. vim.inspect(parsed[#parsed]))
+        if node:type() ~= 'word' then
+          test_name = string.sub(test_name, 2, #test_name - 1)
+        end
+        assert(
+          parsed[#parsed].id == '',
+          'id already set for: ' .. vim.inspect(parsed[#parsed])
+        )
+        parsed[#parsed].id = file_path .. '::' .. test_name
+        assert(
+          parsed[#parsed].name == '',
+          'name already set for: ' .. vim.inspect(parsed[#parsed])
+        )
         parsed[#parsed].name = test_name
-      elseif cap_name == "test.end" then
+      elseif cap_name == 'test.end' then
         local ele_range = parsed[#parsed].range
         local range = { node:range() }
         ele_range[3] = range[3]
@@ -103,7 +140,7 @@ function Pos._build_list_of_positions(file_path, query_str)
 end
 
 ---@return Tree | nil
-local function parse_positions_for_comment_tests(file_path, query)
+local function parse_positions_for_annotation_tests(file_path, query)
   if Pos.child_failed or not lib.subprocess.enabled() then
     return Pos._build_list_of_positions(file_path, query)
   end
@@ -114,7 +151,7 @@ local function parse_positions_for_comment_tests(file_path, query)
   )
 
   if err then
-    logger.error("Child process failed to parse, disabling suprocess usage")
+    logger.error('Child process failed to parse, disabling suprocess usage')
     Pos.child_failed = true
     return Pos._build_list_of_positions(file_path, query)
   end
@@ -129,7 +166,10 @@ function Pos.discover_positions(file_path, config)
   if config.use_comments_to_indicate_tests then
     return lib.treesitter.parse_positions(file_path, comment_based_query)
   else
-    return parse_positions_for_comment_tests(file_path, annotation_based_query)
+    return parse_positions_for_annotation_tests(
+      file_path,
+      annotation_based_query
+    )
   end
 end
 

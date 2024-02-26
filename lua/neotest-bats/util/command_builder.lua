@@ -5,10 +5,10 @@
 ---@field _formatter string output format
 ---@field _use_file_as_executable boolean
 local CommandBuilder = {
-  _executable = "",
-  _path = "",
-  _filter = "",
-  _formatter = "tap",
+  _executable = '',
+  _path = '',
+  _filter = '',
+  _formatter = 'tap',
   _use_file_as_executable = false,
 
   new = function(self, use_file_as_executable)
@@ -61,13 +61,13 @@ function CommandBuilder.build(self)
   if not self._use_file_as_executable then
     table.insert(cmd, self._path)
   end
-  if self._filter ~= "" then
-    concat_tables(cmd, { "--filter", self._filter })
+  if self._filter ~= '' then
+    concat_tables(cmd, { '--filter', self._filter })
   end
-  if self._formatter ~= "" then
-    concat_tables(cmd, { "--formatter", self._formatter })
+  if self._formatter ~= '' then
+    concat_tables(cmd, { '--formatter', self._formatter })
   end
-  return table.concat(cmd, " ")
+  return table.concat(cmd, ' ')
 end
 
 return CommandBuilder

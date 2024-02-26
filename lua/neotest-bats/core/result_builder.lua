@@ -1,5 +1,5 @@
-local ResultList = require("neotest-bats.util.result_list")
-local FileChecker = require("neotest-bats.core.file_checker")
+local ResultList = require('neotest-bats.util.result_list')
+local FileChecker = require('neotest-bats.core.file_checker')
 
 ResultBuilder = {}
 

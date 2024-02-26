@@ -1,4 +1,4 @@
-local lib = require("neotest.lib")
+local lib = require('neotest.lib')
 
 RootFinder = {}
 

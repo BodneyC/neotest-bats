@@ -1,13 +1,13 @@
-local FileChecker = require("neotest-bats.core.file_checker")
-local RootFinder = require("neotest-bats.core.root_finder")
-local DirFilter = require("neotest-bats.core.dir_filter")
-local PositionsDiscoverer = require("neotest-bats.core.positions_discoverer")
-local SpecBuilder = require("neotest-bats.core.spec_builder")
-local ResultBuilder = require("neotest-bats.core.result_builder")
+local FileChecker = require('neotest-bats.core.file_checker')
+local RootFinder = require('neotest-bats.core.root_finder')
+local DirFilter = require('neotest-bats.core.dir_filter')
+local PositionsDiscoverer = require('neotest-bats.core.positions_discoverer')
+local SpecBuilder = require('neotest-bats.core.spec_builder')
+local ResultBuilder = require('neotest-bats.core.result_builder')
 
 ---@class Adapter
 ---@field name string
-Adapter = { name = "neotest-bats" }
+Adapter = { name = 'neotest-bats' }
 
 ---Find the project root directory given a current directory to work from.
 ---Should no root be found, the adapter can still be used in a non-project context if a test file matches.
@@ -72,7 +72,7 @@ local default = {
   --- `my-test-file.bats.sh` for filetype detection.
   ---Also seen `.bats.bash` and `.spec.bash`, hence why I've left it
   --- configurable.
-  file_include_patterns = { ".bats.sh$", ".bats$" },
+  file_include_patterns = { '.bats.sh$', '.bats$' },
   ---Patterns by which to filter files to exclude as tests
   file_exclude_patterns = {},
   ---Patterns by which to filter directories to exclude as tests, note that
@@ -83,10 +83,10 @@ local default = {
   --- `tests/libs` so no `^`.
   ---`^bats/` is because I've also seen them in bats directories when you
   ---  perhaps already have a `libs` for another purpose.
-  dir_exclude_patterns = { "libs/", "^bats/" },
-  root_dir_indicators = { ".git", "lib" },
+  dir_exclude_patterns = { 'libs/', '^bats/' },
+  root_dir_indicators = { '.git', 'lib' },
   ---Path to executable, the BATS test-runner
-  executable = "bats",
+  executable = 'bats',
   ---Whether to use the name of the file as the executable, i.e. that the path
   --- to BATS executable and any other options are given in the file's shebang
   use_file_as_executable = false,
@@ -98,7 +98,7 @@ local default = {
 }
 
 function Adapter.setup(opt)
-  Adapter.config = vim.tbl_deep_extend("force", default, opt or {})
+  Adapter.config = vim.tbl_deep_extend('force', default, opt or {})
   return Adapter
 end
 

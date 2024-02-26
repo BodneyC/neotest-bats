@@ -10,15 +10,15 @@ local ResultList = {
 }
 
 function ResultList.add_successful_result(self, result)
-  self._results[result.id] = { status = "passed" }
+  self._results[result.id] = { status = 'passed' }
 end
 
 function ResultList.add_failed_result(self, result)
-  self._results[result.id] = { status = "failed" }
+  self._results[result.id] = { status = 'failed' }
 end
 
 function ResultList.add_skipped_result(self, result)
-  self._results[result.id] = { status = "skipped" }
+  self._results[result.id] = { status = 'skipped' }
 end
 
 function ResultList.add_result_with_code(self, result, code)
@@ -32,7 +32,7 @@ end
 -- @returns boolean whether all results passed
 function ResultList.are_all_passed(self)
   for _, v in pairs(self._results) do
-    if v.status ~= "passed" then
+    if v.status ~= 'passed' then
       return false
     end
   end

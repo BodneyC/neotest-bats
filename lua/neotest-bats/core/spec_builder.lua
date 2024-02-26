@@ -1,5 +1,5 @@
-local root_finder = require("neotest-bats.core.root_finder")
-local CommandBuilder = require("neotest-bats.util.command_builder")
+local root_finder = require('neotest-bats.core.root_finder')
+local CommandBuilder = require('neotest-bats.util.command_builder')
 
 local SpecBuilder = {}
 
@@ -15,14 +15,17 @@ function SpecBuilder.build_spec(args, config)
   for _, node in tree:iter_nodes() do
     local node_data = node:data()
     local command
-    if node_data.type == "file" then
-      command =
-        CommandBuilder:new(config.use_file_as_executable):executable(node_data.path, config.executable):path(path)
-    elseif node_data.type == "test" then
+    if node_data.type == 'file' then
+      command = CommandBuilder:new(config.use_file_as_executable)
+        :executable(node_data.path, config.executable)
+        :path(path)
+    elseif node_data.type == 'test' then
       command = CommandBuilder:new(config.use_file_as_executable)
         :filter(node_data.name)
         :executable(node_data.path, config.executable)
         :path(path)
+    else
+      return nil
     end
 
     commands[#commands + 1] = {

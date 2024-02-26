@@ -1,0 +1,17 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+
+# I know the 'local' repo is discouraged but I'm lazy and the sole
+#  developer on this one
+- repo: local
+  hooks:
+
+  - id: stylua
+    name: stylua
+    language: system
+    entry: stylua
+    types: [lua]
